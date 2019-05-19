@@ -46,6 +46,7 @@ class GameClient():
         self.screen = pygame.display.set_mode((width, height))
         self.bg_surface = pygame.image.load("bg.png").convert()
 
+        # Load sprite images
         self.bombimage = pygame.image.load("bomb.png").convert_alpha() 
         self.explosionimage = pygame.image.load("explosion.png").convert_alpha() 
         self.playerimage = pygame.image.load("player.png").convert_alpha()

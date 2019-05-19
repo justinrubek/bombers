@@ -249,6 +249,9 @@ class GameServer():
                         if len(msg) >= 1:
                             cmd = msg[0]
 
+                        if addr in self.players and self.players[addr].alive == False:
+                            continue
+
                         if cmd == "c":  # New Connection
                             # TODO: Place starting position based off of player count (corners)
                             self.players[addr] = Player((0,0), addr)
