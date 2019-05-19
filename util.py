@@ -3,7 +3,7 @@ import pygame
 
 BLOCK_SIZE = 64
 WIDTH = 1024
-HEIGHT = 568
+HEIGHT = 568+32
 
 # Width/Height of screen - size of sprite
 X_MAX = WIDTH-BLOCK_SIZE 

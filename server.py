@@ -79,7 +79,6 @@ class Player(pygame.sprite.Sprite):
             self.rect = newrect
 
     def collides_with(self, sprite):
-        print("S:{}".format(sprite))
         return not self.rect.colliderect(sprite.rect)
 
     def kill(self):
@@ -109,7 +108,6 @@ class Explosion(pygame.sprite.Sprite):
         initialX = random.randrange(-(length_of_blast // 2), 1)
         initialY = random.randrange(-(height_of_blast // 2), 1)
         
-        print(walls)
         try:
             for i in range(initialX, length_of_blast):
                 rect = pygame.Rect(start[0]+(BLOCK_SIZE*i), start[1], width, height) 
@@ -134,7 +132,6 @@ class Explosion(pygame.sprite.Sprite):
         self.rects = rects
 
     def collides_with(self, sprite):
-        print(type(sprite))
         for rect in self.rects:
             if rect.colliderect(sprite.rect):
                 return True
@@ -199,14 +196,12 @@ class GameServer():
         for wall in self.walls:
             # check collision between player and wall
             if move.colliderect(wall.rect):
-                print("{} collides with player {}".format(wall.get_pos(), player.rect.bottomright))
                 return
             
         for bomb in self.bombs:
             # check collision between player and wall
             if bomb.primed():
                 if move.colliderect(bomb.rect):
-                    print("{} collides with player {}".format(bomb.get_pos(), player.rect.bottomright))
                     return
             
         player.move(move)
@@ -215,7 +210,6 @@ class GameServer():
         # Find the position of the player
         pos = self.players[player].get_pos()
         self.bombs.append(Bomb(pos))
-        print("Placed bomb at: {}".format(pos))
 
     def check_explosions(self):
         # See if any explosions have ended
@@ -225,25 +219,16 @@ class GameServer():
         
         # Determine if any bombs have exploded
         for bomb in self.bombs.copy():
-            print("Checking bomb")
             if bomb.check_exploded():
-                print("Bomb exploded")
                 self.explosions.append(Explosion(bomb.get_pos(), self.walls))
                 self.bombs = [b for b in self.bombs if bomb.get_pos() != b.get_pos()]
 
         # See if any players overlap with an explosion
-        for explosion in self.explosions.copy():
-            print("Checking if player in explosion")
-            for _, player in self.players.copy().items():
-                print("Checking for another player!")
+        for explosion in self.explosions:
+            for _, player in self.players.items():
                 if explosion.collides_with(player):
-                    print("Collision with explosion")
                     player.kill()
-                else:
-                    print("Player safe!")
             
-
-
     def run(self):
         print("Server started. Awaiting input")
         try:
@@ -265,13 +250,23 @@ class GameServer():
                             continue
 
                         if cmd == "c":  # New Connection
-                            # TODO: Place starting position based off of player count (corners)
-                            self.players[addr] = Player((0,0), addr)
+                            # Place starting position based off of player count (corners)
+                            if len(self.players) == 0:
+                                self.players[addr] = Player((0,0), addr)
+                            elif len(self.players) == 1:
+                                self.players[addr] = Player((X_MAX-32,Y_MAX-32), addr)
+                            elif len(self.players) == 2:
+                                self.players[addr] = Player((X_MAX-32,0), addr)
+                            else:
+                                self.players[addr] = Player((0,Y_MAX-32), addr)
+                                
                         elif cmd == "u":  # Movement Update
                             if len(msg) >= 2 and addr in self.players:
                                 self.handle_movement(msg[1], addr)
+                                
                         elif cmd == "b": # Bomb placement
                             self.add_bomb(addr)
+                            
                         elif cmd == "d":  # Player Quitting
                             if addr in self.players:
                                 del self.players[addr]
@@ -292,12 +287,9 @@ class GameServer():
                     for explosion in self.explosions:
                         explosion_msg = "e"
                         for rect in explosion.get_rects():
-                            print(rect)
                             explosion_msg += "{},{};".format(*rect)
                         
-                        print("Expl:{}".format(explosion_msg))
                         explosion_msg = explosion_msg[:-1] # remove trailing semi-colon
-                        print("Expl:{}".format(explosion_msg))
                         info.append(explosion_msg)
 
                     wall_msg = "w"
@@ -308,7 +300,6 @@ class GameServer():
                       
                     tosend = '|'.join(info) 
                     tosend += '\n'
-                    print(tosend)
                     self.listener.sendto(tosend.encode(), player)
         except KeyboardInterrupt as e:
             print("Game is over.")

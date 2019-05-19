@@ -71,7 +71,6 @@ class GameClient():
             while running:
                 clock.tick(tickspeed)
 
-                # select on specified file descriptors
                 readable, writable, exceptional = (
                     select.select(self.read_list, self.write_list, [], 0)
                 )
@@ -83,9 +82,7 @@ class GameClient():
                         self.screen.blit(self.bg_surface, (0, 0))
                         
                         msg = msg.decode()
-                        print(msg)
                         for data in msg.split('|'):
-                            print(data)
                             if len(data) == 0:
                                 continue
                             msgtype = data[0]
@@ -130,19 +127,19 @@ class GameClient():
                         running = False
                         break
                     elif event.type == pygame.locals.KEYDOWN:
-                        if event.key == pygame.locals.K_UP:
+                        if event.key == pygame.locals.K_w:
                             self.conn.sendto(
                                 b"uu", (self.addr, self.serverport))
-                        elif event.key == pygame.locals.K_DOWN:
+                        elif event.key == pygame.locals.K_s:
                             self.conn.sendto(
                                 b"ud", (self.addr, self.serverport))
-                        elif event.key == pygame.locals.K_LEFT:
+                        elif event.key == pygame.locals.K_a:
                             self.conn.sendto(
                                 b"ul", (self.addr, self.serverport))
-                        elif event.key == pygame.locals.K_RIGHT:
+                        elif event.key == pygame.locals.K_d:
                             self.conn.sendto(
                                 b"ur", (self.addr, self.serverport))
-                        elif event.key == pygame.locals.K_b:
+                        elif event.key == pygame.locals.K_SPACE:
                             self.conn.sendto(
                                 b"b", (self.addr, self.serverport))
                         pygame.event.clear(pygame.locals.KEYDOWN)
