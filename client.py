@@ -1,4 +1,5 @@
 import logging
+import os
 import pygame
 import pygame.locals
 import socket
@@ -33,7 +34,7 @@ class GameClient():
         self.clientport = random.randrange(8000, 8999)
         self.conn = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         # Bind to localhost - set to external ip to connect from other computers
-        self.conn.bind(("127.0.0.1", self.clientport))
+        self.conn.bind(("0.0.0.0", self.clientport))
         self.addr = addr
         self.serverport = serverport
 
@@ -58,12 +59,10 @@ class GameClient():
         pygame.key.set_repeat(50, 50)
 
     def run(self):
-        logging.debug("d")
         running = True
         clock = pygame.time.Clock()
         tickspeed = 30
 
-        logging.debug("d")
 
         try:
             # Initialize connection to server
@@ -150,7 +149,8 @@ class GameClient():
 
 
 if __name__ == "__main__":
-    logging.basicConfig(format='%(levelname)s %(funcName)s: %(message)s on l%(lineno)d',
-                        level=logging.DEBUG)
-    g = GameClient()
+    address = os.environ.get("ADDRESS", "0.0.0.0")
+    port = os.environ.get("PORT", 3000)
+    
+    g = GameClient(address, port)
     g.run()
