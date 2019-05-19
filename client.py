@@ -6,13 +6,27 @@ import select
 import random
 import time
 
+from util import WIDTH, HEIGHT
+
 def getPos(string):
     x, sep, y = string.partition(',')
     return int(x), int(y)
 
+def get_walls(string):
+    walls = []
+    
+    for pos in string.split(';'):
+        walls.append(getPos(pos))
+        
+    return walls
 
-WIDTH = 1280
-HEIGHT = 720
+def get_explosion(string):
+    explosion = []
+
+    for pos in string.split(';'):
+        explosion.append(getPos(pos))
+
+    return explosion
 
 class GameClient():
     def __init__(self, addr="127.0.0.1", serverport=3000):
@@ -32,8 +46,10 @@ class GameClient():
         self.screen = pygame.display.set_mode((width, height))
         self.bg_surface = pygame.image.load("bg.png").convert()
 
-        self.playerimage = pygame.image.load("player.png").convert_alpha()
         self.bombimage = pygame.image.load("bomb.png").convert_alpha() 
+        self.explosionimage = pygame.image.load("explosion.png").convert_alpha() 
+        self.playerimage = pygame.image.load("player.png").convert_alpha()
+        self.wallimage = pygame.image.load("wall.png").convert_alpha() 
 
         pygame.event.set_allowed(None)
         pygame.event.set_allowed([pygame.locals.QUIT,
@@ -66,11 +82,13 @@ class GameClient():
                         self.screen.blit(self.bg_surface, (0, 0))
                         
                         msg = msg.decode()
+                        print(msg)
                         for data in msg.split('|'):
+                            print(data)
                             msgtype = data[0]
 
+                            data = data[1:]
                             if msgtype == "p":  # Player position
-                                data = data[1:]
                                 x, y = getPos(data)
                                 
                                 try:
@@ -80,7 +98,6 @@ class GameClient():
                                     # If something goes wrong, don't draw anything.
                                     pass
                             elif msgtype == "b":  # Bomb position
-                                data = data[1:]
                                 x, y = getPos(data)
                                 
                                 try:
@@ -91,7 +108,19 @@ class GameClient():
                                     pass
                                 pass
                             elif msgtype == "e":  # Bomb explosion
-                                pass
+                                explosion = get_explosion(data)
+                                for pos in explosion:
+                                    try:
+                                        self.screen.blit(
+                                            self.explosionimage, pos)
+                                    except:
+                                        # If something goes wrong, don't draw anything.
+                                        pass
+                            elif msgtype == "w": # Get the list of walls
+                                walls = get_walls(data)
+                                for wall in walls:
+                                    self.screen.blit(
+                                            self.wallimage, wall)
 
                 for event in pygame.event.get():
                     if event.type == pygame.QUIT or event.type == pygame.locals.QUIT:
