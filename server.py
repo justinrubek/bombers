@@ -86,7 +86,7 @@ class Player(pygame.sprite.Sprite):
         self.alive = False
             
 class Explosion(pygame.sprite.Sprite):
-    def __init__(self, pos, life=1):
+    def __init__(self, pos, walls, life=1):
         pygame.sprite.Sprite.__init__(self)
         _, self.rect = load_image("explosion.png")
         
@@ -109,14 +109,26 @@ class Explosion(pygame.sprite.Sprite):
         initialX = random.randrange(-(length_of_blast // 2), 1)
         initialY = random.randrange(-(height_of_blast // 2), 1)
         
-        for i in range(initialX, length_of_blast):
-            rect = pygame.Rect(start[0]+(BLOCK_SIZE*i), start[1], width, height) 
-            print("R:{}".format(rect))
-            rects.append(rect)
+        print(walls)
+        try:
+            for i in range(initialX, length_of_blast):
+                rect = pygame.Rect(start[0]+(BLOCK_SIZE*i), start[1], width, height) 
+                for wall in walls:
+                    if wall.rect.colliderect(rect):
+                        raise StopIteration
+                rects.append(rect)
+        except StopIteration:
+            pass
             
-        for j in range(initialY, height_of_blast):
-            rect = pygame.Rect(start[0], start[1]+(BLOCK_SIZE*j), width, height) 
-            rects.append(rect)
+        try:
+            for j in range(initialY, height_of_blast):
+                rect = pygame.Rect(start[0], start[1]+(BLOCK_SIZE*j), width, height) 
+                for wall in walls:
+                    if wall.rect.colliderect(rect):
+                        raise StopIteration
+                rects.append(rect)
+        except StopIteration:
+            pass
        # rects.append(pygame.Rect(start[0]-BLOCK_SIZE, start[1], width, height))
        # rects.append(pygame.Rect(start[0]+BLOCK_SIZE, start[1], width, height))
         self.rects = rects
@@ -216,7 +228,7 @@ class GameServer():
             print("Checking bomb")
             if bomb.check_exploded():
                 print("Bomb exploded")
-                self.explosions.append(Explosion(bomb.get_pos()))
+                self.explosions.append(Explosion(bomb.get_pos(), self.walls))
                 self.bombs = [b for b in self.bombs if bomb.get_pos() != b.get_pos()]
 
         # See if any players overlap with an explosion

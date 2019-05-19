@@ -86,6 +86,8 @@ class GameClient():
                         print(msg)
                         for data in msg.split('|'):
                             print(data)
+                            if len(data) == 0:
+                                continue
                             msgtype = data[0]
 
                             data = data[1:]
