@@ -234,7 +234,7 @@ class GameServer():
         try:
             while True:
                 readable, writable, exceptional = (
-                        select.select(self.read_list, self.write_list, [])
+                        select.select(self.read_list, self.write_list, [], .5)
                         )
                 for f in readable:
                     if f is self.listener:
